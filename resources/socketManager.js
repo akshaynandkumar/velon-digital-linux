@@ -1,6 +1,7 @@
 var logger = require('./loggingManager');
 var resourceManager = require('../resources/resourceManager');
-var sendBuffer = [];
+var uuid = require('node-uuid');
+var rooms = require("rooms");
 
 function SocketManager() {
 
@@ -8,15 +9,18 @@ function SocketManager() {
 
 function handleConnect(connectMsg) {
 	var self = this;
-	self.join('broadcast');
+	self.id = uuid.v1();
+	rooms.join('broadcast',self);
 	setTimeout(function() {
-		self.send("{'disconnect': true}");
-		self.disconnect();
+		if(self.readyState == 1) {
+			self.close("{'disconnect': true}");
+		}
+		rooms.leave(self);
 	},30000);
 }
 
 function handleDisconnect(client) {
-	
+	rooms.leave(this);
 }
 
 function initialiseStream() {
@@ -41,11 +45,16 @@ SocketManager.prototype = {
 		
 		client.on('message', handleConnect);
 		
-		client.on('disconnect', handleDisconnect);
+		client.on('close', handleDisconnect);
 	},
 	
 	processData: function(data) {
-		this.serverSocket.to('broadcast').send(JSON.stringify(data));
+		var room  = rooms.find('broadcast');
+		if(room != undefined) {
+			rooms.find('broadcast').sockets.forEach(function(client) {
+				client.send(JSON.stringify(data));
+			});
+		}
 	}
 }
 	
