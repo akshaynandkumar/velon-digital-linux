@@ -2,16 +2,23 @@ var azureLogger = require('azure-logger');
 var config = require('../config');
 
 var warningOptions = {
-	    table: 'velonRace',
+	    table: 'velonDigital',
 	    entryType: 'warning'
 };
 
 var errorOptions = {
-	    table: 'velonRace',
+	    table: 'velonDigital',
 	    entryType: 'error'
 };
 
+var infoOptions = {
+		table: 'velonDigital',
+	    entryType: 'info'
+}
+
 var enabled = config.loggerEnable;
+
+var debug = config.loggerDebug;
 
 // On initialisation check if require environment variables are configured.  If not disable, the azure logger
 function Logger() {
@@ -22,35 +29,39 @@ function Logger() {
 Logger.prototype = {
 
 		errorLog : function(msg) {
-			if(enabled) {
+			if(enabled && !debug) {
 				azureLogger.log(JSON.stringify(msg),errorOptions, function (err, res) {
 				    if (err) {
 				    	console.log("Error writing to Logging Blob store: " + JSON.stringify(errorOptions));
 				    }
 				});
 			} else {
-				console.log(JSON.stringify(msg));
+				console.log("ERROR: " + JSON.stringify(msg));
 			}
-			
-
 		},
 		
 		warnLog : function(msg) {
-			if(enabled) {
+			if(enabled && !debug) {
 				azureLogger.log(JSON.stringify(msg), warningOptions, function (err, res) {
 				    if (err) {
 				    	console.log("Error writing to Logging Blob store: " + JSON.stringify(warningOptions));
 				    }
 				});
 			} else {
-				console.log(JSON.stringify(msg));
+				console.log("WARN: " + JSON.stringify(msg));
 			}
 
 		},
 		
 		infoLog : function(msg) {
-			if(enabled) {
-				console.log(JSON.stringify(msg));
+			if(enabled && !debug) {
+				azureLogger.log(JSON.stringify(msg), infoOptions, function (err, res) {
+				    if (err) {
+				    	console.log("Error writing to Logging Blob store: " + JSON.stringify(infoOptions));
+				    }
+				});
+			} else {
+				console.log("INFO: " + JSON.stringify(msg));
 			}
 		}
 	};

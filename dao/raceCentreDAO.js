@@ -26,6 +26,8 @@ RaceCentreDAO.prototype = {
 		
 		cursorStream.on('data', dataCallback);
 		cursorStream.on('end', endCallBack);
+		
+		return cursorStream;
 	}
 };
 

@@ -24,26 +24,14 @@ inits.start(function(callback) {
 	// Get port from environment and store in Express.
 	var port = normalizePort(process.env.PORT || '3000');
 	
-	// Create HTTP server.
-	//var server = http.createServer(function(request, response) {});
-
-	// Listen on provided port, on all network interfaces.
-	//server.listen(port);
-	//server.on('error', onError);
-	//server.on('listening', function() {
-	//	onListening();
-	//	callback(null);
-	//});
-	
 	//Create websocket on the HTTP Server
 	const WebSocket = require('ws');
 
-	const wss = new WebSocket.Server({ port: port });
-	//var io = require('socket.io');
-	//var serverSocket = io.listen(server);
+	const wss = new WebSocket.Server({port: port});
+
 	socketManager.init(wss);
-	wss.on('connection', socketManager.handleConnection);
-	
+	wss.on('listening', onListening);
+
 	/**
 	 * Normalize a port into a number, string, or false.
 	 * @param val
@@ -65,44 +53,11 @@ inits.start(function(callback) {
 	}
 
 	/**
-	 * Event listener for HTTP server "error" event.
-	 * @param error
-	 */
-	function onError(error) {
-	  if (error.syscall !== 'listen') {
-	    callback(error);
-		throw error;
-	  }
-
-	  var bind = typeof port === 'string'
-	    ? 'Pipe ' + port
-	    : 'Port ' + port;
-
-	  // Handle specific listen errors with friendly messages
-	  switch (error.code) {
-	    case 'EACCES':
-	      logger.errorLog(bind + ' requires elevated privileges');
-	      process.exit(1);
-	      break;
-	    case 'EADDRINUSE':
-	      logger.errorLog(bind + ' is already in use');
-	      process.exit(1);
-	      break;
-	    default:
-	      throw error;
-	  }
-	}
-
-	/**
-	 * Event listener for HTTP server "listening" event.
+	 * Event listener for Websocket "listening" event.
 	 */
 	function onListening() {
-	  var addr = server.address();
-	  var bind = typeof addr === 'string'
-	    ? 'pipe ' + addr
-	    : 'port ' + addr.port;
-	  debug('Listening on ' + bind);
-	  logger.infoLog("Velon-race API listening" + bind);
+	  logger.infoLog("Velon-Digital Websocket listening on port " + port);
+	  callback(null);
 	}
 });
 
