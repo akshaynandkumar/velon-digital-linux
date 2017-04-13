@@ -14,8 +14,7 @@ RiderDevice.prototype = {
 				return null;
 			} else {
 				
-				var currentTimeUTC = 1487787360 + 30;
-				//var currentTimeUTC = moment().utc().valueOf()/1000|0;
+				var currentTimeUTC = moment().utc().valueOf()/1000|0;
 				
 				var riderDeviceInformation = lodash.find(riderDeviceMapping.mapping, function(rider) {
 					if (rider.riderId == riderID) {
