@@ -2,6 +2,8 @@
 var referenceDataManager = require('../resources/referenceDataManager');
 var lodash = require('lodash');
 
+var raceEventMask = require('../resources/raceEventMaskTable');
+
 function RaceEvent(raceCentreDAO) {
 	this.raceCentreDAO = raceCentreDAO;
 	this.stream = null;
@@ -49,15 +51,15 @@ RaceEvent.prototype = {
 						event.speed = riderDeviceInformation.speedInd ? (data.speed != undefined ? data.speed
 								: (data.speedGPS != undefined ? data.speedGPS : 0)) : 0;
 						
-						event.heartRate = riderDeviceInformation.HRInd ? (data.heartRate != undefined ? data.heartRate : 0) : 0;
+						event.heartRate = riderDeviceInformation.HRInd ? (data.heartRate != undefined ? getFeedValue("HR",data.heartRate) : 0) : 0;
 						
-						event.power = riderDeviceInformation.powerInd ? (data.power != undefined ? data.power : 0 ) : 0;
+						event.power = riderDeviceInformation.powerInd ? (data.power != undefined ? getFeedValue("power", data.power) : 0 ) : 0;
 						
 					} else {
 						event.deviceId = 0;
 						event.speed = data.speed != undefined ? data.speed :(data.speedGPS != undefined ? data.speedGPS : 0);
-						event.heartRate = data.heartRate != undefined ? data.heartRate : 0;
-						event.power = data.power != undefined ? data.power : 0;
+						event.heartRate = data.heartRate != undefined ? getFeedValue("HR",data.heartRate) : 0;
+						event.power = data.power != undefined ? getFeedValue("power", data.power) : 0;
 						
 					}
 					
@@ -75,5 +77,22 @@ RaceEvent.prototype = {
 		}
 	}
 };
+
+function getFeedValue(type, value) {
+	var feedValue = null;
+	var diff = Number.MAX_SAFE_INTEGER;
+	raceEventMask.forEach(function(mapping) {
+		if (value == mapping[type]) {
+			return mapping.feed;
+		} else {
+			var currentDiff = Math.abs(value - mapping[type]);
+			if (currentDiff < diff) {
+				diff = currentDiff;
+				feedValue = mapping.feed;
+			}
+		}
+	});
+	return feedValue;	
+}
 
 module.exports = RaceEvent;
