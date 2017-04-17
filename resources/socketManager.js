@@ -112,33 +112,41 @@ SocketManager.prototype = {
 	},
 	
 	handleClientDisconnect : function (code, reason) {
-		var connectionId = this.id;
-		logger.infoLog("Connection " + connectionId + " has been disconnected - Reason: " + code + " " + reason);
-		
-		rooms.leave(this);
-		
-		//Remove from activeUserConnections list
-		var userConnectionIndex = lodash.findIndex(activeConnections, connectionId);
-		activeConnections.splice(userConnectionIndex, 1);
-		
-		//If no active connections, pause event stream.
-		if (activeConnections.length == 0) {
-			pauseStream();
+		try {
+			var connectionId = this.id;
+			logger.infoLog("Connection " + connectionId + " has been disconnected - Reason: " + code + " " + reason);
+			
+			rooms.leave(this);
+			
+			//Remove from activeUserConnections list
+			var userConnectionIndex = lodash.findIndex(activeConnections, connectionId);
+			activeConnections.splice(userConnectionIndex, 1);
+			
+			//If no active connections, pause event stream.
+			if (activeConnections.length == 0) {
+				//pauseStream();
+			}
+		} catch (err) {
+			logger.errorLog(err);
 		}
 	},
 	
 	processData: function(data) {
-		var room  = rooms.find('digital');
-		if(room != undefined) {
-			room.sockets.forEach(function(client) {
-				if (client != null && client.readyState == 1) {
-					if (client.jsonpack == true) {
-						client.send(JSON.stringify(jsonpack.pack(data)));
-					} else {
-						client.send(JSON.stringify(data));
-					}
-				} 
-			});
+		try {
+			var room  = rooms.find('digital');
+			if(room != undefined) {
+				room.sockets.forEach(function(client) {
+					if (client != null && client.readyState == 1) {
+						if (client.jsonpack == true) {
+							client.send(JSON.stringify(jsonpack.pack(data)));
+						} else {
+							client.send(JSON.stringify(data));
+						}
+					} 
+				});
+			}
+		} catch (err) {
+			logger.errorLog(err);
 		}
 	}
 }
