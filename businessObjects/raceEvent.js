@@ -48,18 +48,20 @@ RaceEvent.prototype = {
 						
 						event.deviceId = riderDeviceInformation.deviceId != null ? riderDeviceInformation.deviceId : 0;
 						
-						event.speed = riderDeviceInformation.speedInd ? (data.speed != undefined ? data.speed
-								: (data.speedGPS != undefined ? data.speedGPS : 0)) : 0;
+						event.speed = riderDeviceInformation.speedInd ? (data.speedInd ? data.speed : (data.speedGPS != undefined ? data.speedGPS : 0)) : 0;
 						
 						event.heartRate = riderDeviceInformation.HRInd ? (data.heartRate != undefined ? getFeedValue("HR",data.heartRate) : 0) : 0;
 						
 						event.power = riderDeviceInformation.powerInd ? (data.power != undefined ? getFeedValue("power", data.power) : 0 ) : 0;
 						
+						event.cadence = riderDeviceInformation.cadenceInd ? (data.cadence != undefined ? data.cadence : 0 ) : 0;
+						
 					} else {
 						event.deviceId = 0;
-						event.speed = data.speed != undefined ? data.speed :(data.speedGPS != undefined ? data.speedGPS : 0);
+						event.speed = data.speedInd ? data.speed : (data.speedGPS != undefined ? data.speedGPS : 0)
 						event.heartRate = data.heartRate != undefined ? getFeedValue("HR",data.heartRate) : 0;
 						event.power = data.power != undefined ? getFeedValue("power", data.power) : 0;
+						event.cadence = data.cadence != undefined ? data.cadence : 0;
 						
 					}
 					
