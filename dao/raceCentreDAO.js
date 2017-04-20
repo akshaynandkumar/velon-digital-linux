@@ -9,25 +9,32 @@ RaceCentreDAO.prototype = {
 	init : function(db, callback) {
 		var self = this;
 		
-		this.collection = db.collection(this.collectionId);
-		if (this.collection == null) {
-			callback("Could not get collection " + this.collectionId);
+		self.collection = db.collection(self.collectionId);
+		if (self.collection == null) {
+			callback("Could not get collection " + self.collectionId);
 		} else {
 			callback(null);
 		}
 	},
 
-	getRaceData : function(seconds, dataCallback, endCallBack) {
+	
+	getRaceData : function(seconds, dataCallback, endCallBack, startCallback) {
 
 		var self = this;
-		var cursor = this.collection.find({"time.epochTime": {"$gte": seconds}}, { tailable: true });
-	    var cursorStream = cursor.stream();
-	    var itemsProcessed = 0;
 		
-		cursorStream.on('data', dataCallback);
-		cursorStream.on('end', endCallBack);
+		try {
+			var cursor = self.collection.find({"time.epochTime": {"$gte": seconds}}, { tailable: true });
+		    
+			// Get stream from cursor and apply event handlers
+			var cursorStream = cursor.stream();
+			cursorStream.on('data', dataCallback);
+			cursorStream.on('end', endCallBack);
+			
+			startCallback(null, cursorStream);
 		
-		return cursorStream;
+		} catch (err) {
+			startCallback(err);
+		}
 	}
 };
 

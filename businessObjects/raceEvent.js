@@ -12,18 +12,19 @@ function RaceEvent(raceCentreDAO) {
 
 RaceEvent.prototype = {
 
-	startStream : function(dataCallback, endCallBack) {
+	startStream : function(dataCallback, endCallBack, startCallback) {
 		var self = this;
-		
-		if(self.stream != null) {
-			if(!self.stream.isClosed()) {
-				self.stream.resume();
+
+		var d = new Date();
+		var seconds = d.getTime() /1000;
+		self.raceCentreDAO.getRaceData(seconds, processDataCallback, endCallBack, function(err, cursorStream) {
+			if(err) {
+				startCallback(err);
+			} else {
+				self.stream = cursorStream;
+				startCallback(null);
 			}
-		} else {
-			var d = new Date();
-			var seconds = d.getTime() /1000;
-			self.stream = self.raceCentreDAO.getRaceData(seconds, processDataCallback, endCallBack);
-		}	
+		});	
 	
 		function processDataCallback(data) {
 			
@@ -71,11 +72,17 @@ RaceEvent.prototype = {
 		}
 	},
 	
-	pauseStream : function() {
+	closeStream : function(callback) {
 		var self = this;
 		
 		if (self.stream != null) {
-			self.stream.pause();
+			self.stream.close(function(err) {
+				if (err) {
+					callback(err);
+				} else {
+					callback(null);
+				}
+			});
 		}
 	}
 };
