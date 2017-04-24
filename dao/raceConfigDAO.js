@@ -17,15 +17,16 @@ RaceConfigDAO.prototype = {
 			callback(null);
 		}
 	},
-	
-	getRiderDeviceMapping : function(raceID, callback) {
+		
+	getRiderDeviceMapping : function(eventID, stageID, callback) {
 		var self = this;
 		
-		self.collection.findOne({entityType:"riderDeviceMapping", eventId:raceID}, {_id:0}, function(err, riderDeviceMapping) {
+		self.collection.findOne({entityType:"RiderDeviceMapping", eventId:eventID, stageId:stageID}
+		,{_id:0}, function(err, riderDeviceMapping) {
 			if (err) {
 				callback(err);
 			} else if (riderDeviceMapping == null) {
-				logger.warnLog("No rider deviceMapping exists for raceID:" + raceID + " " + typeof raceID);
+				logger.warnLog("No rider deviceMapping exists for raceID:" + eventID);
 				callback(null, null);
 			} else {
 				callback(null, riderDeviceMapping);

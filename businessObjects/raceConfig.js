@@ -5,18 +5,18 @@ function RaceConfig(raceConfigDAO) {
 
 RaceConfig.prototype = {
 	
-	getRiderDeviceMapping : function(raceID, callback) {
-		var self = this;
-		
-		self.raceConfigDAO.getRiderDeviceMapping(raceID, function(err, riderDeviceMapping) {
-			if(err) {
-				callback(err);
-			} else {
-				callback(null, riderDeviceMapping);
-			}
-		});
-		
-	}
+		getRiderDeviceMapping : function(eventID, stageID, callback) {
+			var self = this;
+
+			self.raceConfigDAO.getRiderDeviceMapping(eventID, stageID, function(err, riderDeviceMapping) {
+				if(err) {
+					callback(err);
+				} else {
+					callback(null, riderDeviceMapping);
+				}
+			});
+			
+		}
 };
 
 module.exports = RaceConfig;

@@ -1,4 +1,5 @@
 const NodeCache = require( "node-cache" );
+var moment = require('moment');
 
 function ReferenceDataManager() {
 	this.riderDeviceCache = new NodeCache( { stdTTL: 300, checkperiod: 300 ,errorOnMissing: false});
@@ -12,17 +13,17 @@ ReferenceDataManager.prototype = {
 		},
 		
 		//RiderDeviceCache
-		getRiderDeviceMapping : function(raceID, callback) {
+		getRiderDeviceMapping : function(eventID, stageID,  callback) {
 			var self = this;
-			
-			var riderDeviceMapping = self.riderDeviceCache.get(raceID);
+			var key = eventID + "-" + stageID;
+			var riderDeviceMapping = self.riderDeviceCache.get(key);
 			if (riderDeviceMapping == null) {
-				self.raceConfig.getRiderDeviceMapping(raceID, function(err, riderDeviceMapping) {
+				self.raceConfig.getRiderDeviceMapping(eventID, stageID, function(err, riderDeviceMapping) {
 					if (err) {
 						callback(err);
 					} else {
 						if (riderDeviceMapping != null) {
-							self.riderDeviceCache.set(raceID, riderDeviceMapping);
+							self.riderDeviceCache.set(key, riderDeviceMapping);
 						}
 						callback(null, riderDeviceMapping);
 					}

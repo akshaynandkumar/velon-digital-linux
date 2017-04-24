@@ -28,7 +28,7 @@ RaceEvent.prototype = {
 	
 		function processDataCallback(data) {
 			
-			referenceDataManager.getRiderDeviceMapping(data.raceId, function(err, riderDeviceMapping) {
+			referenceDataManager.getRiderDeviceMapping(data.eventId, data.stageId, function(err, riderDeviceMapping) {
 				if (err) {
 					logger.errorLog(err);
 					throw 500;
