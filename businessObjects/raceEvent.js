@@ -59,6 +59,8 @@ RaceEvent.prototype = {
 						
 						event.bibNumber = riderDeviceInformation.bibNumber != undefined ? riderDeviceInformation.bibNumber : 0;
 						
+						event.teamId = riderDeviceInformation.teamId != undefined ? riderDeviceInformation.teamId : 0;
+						
 					} else {
 						event.deviceId = 0;
 						event.speed = data.speedInd ? data.speed : (data.speedGPS != undefined ? data.speedGPS : 0)
@@ -66,7 +68,7 @@ RaceEvent.prototype = {
 						event.power = data.power != undefined ? getFeedValue("power", data.power) : 0;
 						event.cadence = data.cadence != undefined ? data.cadence : 0;
 						event.bibNumber = 0;
-						
+						event.teamId = 0;
 					}
 					
 					dataCallback(event);
