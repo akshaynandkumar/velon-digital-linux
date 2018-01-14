@@ -28,52 +28,25 @@ RaceEvent.prototype = {
 	
 		function processDataCallback(data) {
 			
-			referenceDataManager.getRiderDeviceMapping(data.eventId, data.stageId, function(err, riderDeviceMapping) {
-				if (err) {
-					logger.errorLog(err);
-					throw 500;
-				} else {
-					var event = {};
-					event.riderId = data.riderId != undefined ? data.riderId : 0;
-					event.distance = data.distance != undefined ? data.distance : 0;
-					event.long = data.longSnapped != undefined ? data.longSnapped : 0;
-					event.lat = data.latSnapped != undefined ? data.latSnapped : 0;
-					event.acceleration = data.acceleration != undefined ? data.acceleration : 0;
-					event.time = data.time != undefined ? data.time : 0;
-					event.altitude = data.altitude != undefined ? data.altitude: 0;
-					
-					var riderDeviceInformation = riderDevice.getRiderDeviceInformation(data.riderId, riderDeviceMapping);
-					
-					//Hide values depending on rider device information
-					if (riderDeviceInformation != null) {
-						
-						event.deviceId = riderDeviceInformation.deviceId != null ? riderDeviceInformation.deviceId : 0;
-						
-						event.speed = riderDeviceInformation.speedInd ? (data.speed != undefined ? data.speed : (data.speedGps != undefined ? data.speedGps : 0)) : 0;
-						
-						event.heartRate = riderDeviceInformation.HRInd ? (data.heartRate != undefined ? getFeedValue("HR",data.heartRate) : 0) : 0;
-						
-						event.power = riderDeviceInformation.powerInd ? (data.power != undefined ? getFeedValue("power", data.power) : 0 ) : 0;
-						
-						event.cadence = riderDeviceInformation.cadenceInd ? (data.cadence != undefined ? data.cadence : 0 ) : 0;
-						
-						event.bibNumber = riderDeviceInformation.bibNumber != undefined ? riderDeviceInformation.bibNumber : 0;
-						
-						event.teamId = riderDeviceInformation.teamId != undefined ? riderDeviceInformation.teamId : 0;
-						
-					} else {
-						event.deviceId = 0;
-						event.speed = data.speed != undefined ? data.speed : (data.speedGps != undefined ? data.speedGps : 0)
-						event.heartRate = data.heartRate != undefined ? getFeedValue("HR",data.heartRate) : 0;
-						event.power = data.power != undefined ? getFeedValue("power", data.power) : 0;
-						event.cadence = data.cadence != undefined ? data.cadence : 0;
-						event.bibNumber = 0;
-						event.teamId = 0;
-					}
-					
-					dataCallback(event);
-				}
-			});
+			var event = {};
+			
+			event.deviceId = data.deviceId;
+			event.riderId = data.riderInformation.riderId != undefined ? data.riderInformation.riderId : 0;
+			event.distance = data.geographicLocation.distance != undefined ? Math.round(data.geographicLocation.distance) : 0;
+			event.lat = data.geographicLocation.snappedCoordinates.latitude != undefined ? data.geographicLocation.snappedCoordinates.latitude : 0;
+			event.long = data.geographicLocation.snappedCoordinates.longitude != undefined ? data.geographicLocation.snappedCoordinates.longitude : 0;
+			event.acceleration = data.riderStatistics.acceleration != undefined ? parseFloat(data.riderStatistics.acceleration.toFixed(2)) : 0;
+			event.time = data.time != undefined ? data.time : 0;
+			event.altitude = data.gps.altitude != undefined ? data.gps.altitude: 0;
+			
+			event.speed = data.riderInformation.speedInd ? (data.gps.speedGps != undefined ? data.gps.speedGps : 0) : 0 ;
+			event.power =  data.riderInformation.powerInd ? (data.sensorInformation.power != undefined ? getFeedValue("power", data.sensorInformation.power) : 0) : 0;
+			event.heartRate = data.riderInformation.HRInd ? (data.sensorInformation.heartRate != undefined ? getFeedValue("HR", data.sensorInformation.heartRate) : 0) : 0;
+			event.cadence = data.riderInformation.cadenceInd ? (data.sensorInformation.cadence != undefined ? data.sensorInformation.cadence : 0) : 0;
+			event.bibNumber = data.riderInformation.bibNumber != undefined ? data.riderInformation.bibNumber: 0;
+			event.teamId = data.riderInformation.teamId != undefined ? data.riderInformation.teamId: 0;
+								
+			dataCallback(event);
 		}
 	},
 	
