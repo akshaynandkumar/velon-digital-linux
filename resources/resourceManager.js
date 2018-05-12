@@ -1,6 +1,5 @@
 var inits = require('inits');
 var logger = require('./loggingManager');
-var referenceDataManager = require('./referenceDataManager');
 var MongoClient = require('mongodb').MongoClient;
 
 var resourceManager = {};
@@ -41,9 +40,9 @@ inits.init(function(callback) {
 	//Require DAOs and business objects
 	var RaceCentreDAO = require('../dao/raceCentreDAO');
 	var RaceEvent = require('../businessObjects/raceEvent');
-		
-	var RaceConfigDAO = require('../dao/raceConfigDAO');
-	var RaceConfig = require('../businessObjects/raceConfig');
+	
+	var RaceGroupCentreDAO = require('../dao/raceGroupCentreDAO');
+	var RaceGroupEvent = require('../businessObjects/raceGroupEvent');
 	
 	//Create MongoDB database objects - Used to close connections.
 	var mongoDBVelon = null;
@@ -51,14 +50,12 @@ inits.init(function(callback) {
 	// RaceCentre DAO
 	var raceCentreDAO = new RaceCentreDAO(config.raceCentreCollectionId);
 	var raceEvent = new RaceEvent(raceCentreDAO);
-		
-	// RaceConfig DAO
-	var raceConfigDAO = new RaceConfigDAO(config.raceConfigCollectionId);
-	var raceConfig = new RaceConfig(raceConfigDAO);
-	referenceDataManager.setRaceConfig(raceConfig);
 	
+	var raceGroupCentreDAO = new RaceGroupCentreDAO(config.raceGroupCentreCollectionId);
+	var raceGroupEvent = new RaceGroupEvent(raceGroupCentreDAO);
+		
 	// Create a connection pool for database Velon, with a pool size 
-	MongoClient.connect(config.mongoDBVelon, { poolSize: config.mongoDBVelon.poolSize}, function(err, db) {
+	MongoClient.connect(process.env.mongodb_velon, {poolSize: config.mongodbVelon_poolSize}, function(err, db) {
 		if (err) {
 			callback(err);
 		} else {
@@ -75,20 +72,19 @@ inits.init(function(callback) {
 				}
 			});
 			
-			//Init raceConfigDAO
-			raceConfigDAO.init(db, function(err) {
+			raceGroupCentreDAO.init(db, function(err) {
 				if (err) {
 					callback(err);
 				} else {
-					registerResourceInit("raceConfigDAO");
+					registerResourceInit("raceGroupCentreDAO");
 				}
 			});
-			
 		}
 	});
 
 	//Populate ResourceManager
 	resourceManager.raceEvent = raceEvent;
+	resourceManager.raceGroupEvent = raceGroupEvent;
 });
 
 module.exports = resourceManager;

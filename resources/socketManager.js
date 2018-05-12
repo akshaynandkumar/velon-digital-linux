@@ -6,57 +6,78 @@ var lodash = require('lodash');
 var jsonpack = require('jsonpack');
 var config = require('../config');
 
-//List of current active connections
-var activeConnections = [];
-
-//Flag whether race event stream is active
-var streamActive = false;
-
 function SocketManager() {
 
 }
 
+var streamStatus = {
+	"rider" : false,
+	"group" : false
+};
+
 //Start the event stream
-function startStream() {
-	resourceManager.raceEvent.startStream(processData, handleStreamEnd, function (err) {
-		if (err) {
-			logger.errorLog(err);
-		} else {
-			streamActive = true;
-			logger.infoLog("Event stream has started");
-		}
-	});
+function startStream(type) {
+	
+	var stream = null;
+	switch(type) {
+		case "rider":
+			stream = resourceManager.raceEvent;
+			break;
+		case "group":
+			stream = resourceManager.raceGroupEvent;
+			break;
+	}
+	
+	if (stream != null) {
+		stream.startStream(processData, handleStreamEnd, function (err) {
+			if (err) {
+				logger.errorLog(err.message);
+			} else {
+				streamStatus[type] = true;
+				logger.infoLog(type + " event stream has started");
+			}
+		});
+	} else {
+		logger.infoLog("Unknown stream type");
+	}
 }
 
 //Close the event stream - Optional: Pass in a success callback function
-function closeStream(successCallback) {
-	resourceManager.raceEvent.closeStream(function(err) {
-		if (err) {
-			logger.errorLog(err);
-		} else {
-			streamActive = false;
-			logger.infoLog("Event stream has closed");
-			if(successCallback != null) {
-				successCallback();
-			}
-		}
-	});
-}
-
-//Callback for reaching the end of the collection
-function handleStreamEnd() {
-	if(streamActive) {
-		closeStream(function(){
-			if (activeConnections.length != 0) {
-				startStream();
+function closeStream(type, successCallback) {
+	
+	var stream = null;
+	switch(type) {
+		case "rider":
+			stream = resourceManager.raceEvent;
+			break;
+		case "group":
+			stream = resourceManager.raceGroupEvent;
+			break;
+	}
+	if (stream != null) {
+		stream.closeStream(function (err) {
+			if (err) {
+				logger.errorLog(err);
+			} else {
+				streamStatus[type] = false;
+				logger.infoLog(type + " event stream has closed");
+				if(successCallback != null) {
+					successCallback();
+				}
 			}
 		});
+	} else {
+		logger.infoLog("Unknown stream type");
 	}
 }
 
 //Callback to handle data events from event stream
-function processData(data) {
-	socketManager.processData(data);
+function processData(data, type) {
+	socketManager.processData(data, type);
+}
+
+function handleStreamEnd(type) {
+	startStream(type);
 }
 
 //Sends a message to a client connection - Optional: Can close connection after message sent
@@ -86,11 +107,6 @@ SocketManager.prototype = {
 			client.on('close', socketManager.handleClientDisconnect);
 			client.on('message', socketManager.handleClientMessage);
 			
-			//Set timeout for start streaming auth message - 1 minute
-			client.authMessageTimeout = setTimeout(function() {
-				sendClientMessage(client, 400, "Bad Request", true);
-			}, 60000)
-			
 		} catch (err) {
 			logger.errorLog(err);
 			sendClientMessage(client, 500, "Internal Server Error", true);
@@ -102,29 +118,25 @@ SocketManager.prototype = {
 		try {
 			//Parse message sent from client
 			var connectionParams = JSON.parse(message);
-			
-			//Clear timeout that kicks client if no auth message sent for 1 minute. 
-			clearTimeout(client.authMessageTimeout);
-		
+					
 			if (connectionParams != null) {
 			
 				logger.infoLog("Stream request from " + client.upgradeReq.headers.host + " assigned id:" + client.id);
 				
-				var userDetails = connectionParams.userDetails;
-				//Log Details TODO
+				var feedType = connectionParams.type == null ? "rider" : connectionParams.type;
+				var eventId = connectionParams.eventId;
+				var stageId = connectionParams.stageId;
 				
-				//Auto accept client and add them to the Digital room
+				//Auto accept client and add them to the digitial feed room
 				client.jsonpack = connectionParams.jsonpack == null ? false : connectionParams.jsonpack;
 				sendClientMessage(client, 200, "Start Streaming", false);	
-				rooms.join('digital', client);
-				activeConnections.push(client.id);
+				rooms.join(eventId + "-" + stageId + "-" + feedType, client);
 				
 				try {
 					//Start event stream, if not already active.
-					if (!streamActive) {
-						startStream();
+					if (!streamStatus[feedType]) {
+						startStream(feedType);
 					}
-				
 				} catch (err) {
 					logger.errorLog(err);
 					sendClientMessage(client, 500, "Internal Server Error", true);
@@ -151,36 +163,25 @@ SocketManager.prototype = {
 			//Remove client from digital room
 			rooms.leave(this);
 			
-			//Remove from activeUserConnections list
-			var userConnectionIndex = lodash.findIndex(activeConnections, connectionId);
-			activeConnections.splice(userConnectionIndex, 1);
-			
-			//If no active connections, pause event stream.
-			if (activeConnections.length == 0 && streamActive) {
-				closeStream();
-			}
 		} catch (err) {
 			logger.errorLog(err);
 		}
 	},
 	
-	processData: function(data) {
+	processData: function(data, type) {
 		try {
-			if (streamActive) {
-				
-				//Send data to all clients in the digital room, jsonpack if indicated by client
-				var room  = rooms.find('digital');
-				if(room != undefined) {
-					room.sockets.forEach(function(client) {
-						if (client != null && client.readyState == 1) {
-							if (client.jsonpack == true) {
-								client.send(JSON.stringify(jsonpack.pack(data)));
-							} else {
-								client.send(JSON.stringify(data));
-							}
-						} 
-					});
-				}
+			//Send data to all clients in the digital room, jsonpack if indicated by client
+			var room  = rooms.find(type);
+			if(room != undefined) {
+				room.sockets.forEach(function(client) {
+					if (client != null && client.readyState == 1) {
+						if (client.jsonpack) {
+							client.send(JSON.stringify(jsonpack.pack(data)));
+						} else {
+							client.send(JSON.stringify(data));
+						}
+					} 
+				});
 			}
 		} catch (err) {
 			logger.errorLog(err);

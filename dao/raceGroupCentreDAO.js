@@ -1,10 +1,10 @@
-﻿function RaceCentreDAO(collectionId) {
+﻿function RaceGroupCentreDAO(collectionId) {
 	this.collectionId = collectionId;
 	
 	this.collection = null;
 }
 
-RaceCentreDAO.prototype = {
+RaceGroupCentreDAO.prototype = {
 	
 	init : function(db, callback) {
 		var self = this;
@@ -17,13 +17,13 @@ RaceCentreDAO.prototype = {
 		}
 	},
 
-	getRaceData : function(milliseconds, dataCallback, endCallBack, startCallback) {
+	getRaceGroupData : function(milliseconds, dataCallback, endCallBack, startCallback) {
 
 		var self = this;
 		
 		try {
-			var cursor = self.collection.find({"debugging.endProcessingTime": {"$gte": milliseconds}}, { tailable: true });
-		    
+			var cursor = self.collection.find({"endProcessingTime": {"$gte": milliseconds}}, {"_id":0, "endProcessingTime":0}, { tailable: true });
+					
 			var cursorStream = cursor.stream();
 			cursorStream.on('data', dataCallback);
 			cursorStream.on('end', endCallBack);
@@ -35,4 +35,4 @@ RaceCentreDAO.prototype = {
 	}
 };
 
-module.exports = RaceCentreDAO;
+module.exports = RaceGroupCentreDAO;

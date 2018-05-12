@@ -56,7 +56,7 @@ inits.start(function(callback) {
 	 * Event listener for Websocket "listening" event.
 	 */
 	function onListening() {
-	  logger.infoLog("Velon-Digital Websocket listening on port " + port);
+	  logger.infoLog("velon-digital websocket listening on port " + port);
 	  callback(null);
 	}
 });
