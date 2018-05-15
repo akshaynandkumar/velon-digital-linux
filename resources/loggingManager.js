@@ -54,7 +54,7 @@ Logger.prototype = {
 		},
 		
 		infoLog : function(msg) {
-			if(enabled && !debug) {
+			if(enabled && debug) {
 				azureLogger.log(JSON.stringify(msg), infoOptions, function (err, res) {
 				    if (err) {
 				    	console.log("Error writing to Logging Blob store: " + JSON.stringify(infoOptions));
