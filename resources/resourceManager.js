@@ -55,7 +55,14 @@ inits.init(function(callback) {
 	var raceGroupEvent = new RaceGroupEvent(raceGroupCentreDAO);
 		
 	// Create a connection pool for database Velon, with a pool size 
-	MongoClient.connect(process.env.mongodb_velon, {poolSize: config.mongodbVelon_poolSize}, function(err, db) {
+	MongoClient.connect(process.env.mongodb_velon, {
+			poolSize: config.mongodbVelon_poolSize,
+			autoReconnect: false,
+			noDelay: false,
+			keepAlive: 120000,
+	        connectTimeoutMS: 120000,
+	        socketTimeoutMS: 600000 
+        }, function(err, db) {
 		if (err) {
 			callback(err);
 		} else {
