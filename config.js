@@ -4,8 +4,8 @@ var format = require('util').format;
  
  config.streamTypes = ["rider", "group"];
  
- config.raceCentreCollectionId = "RaceCentreFeed";
- config.raceGroupCentreCollectionId = "RaceGroupCentreFeed";
+ config.raceCentreCollectionId = "RaceCentreFeedDigital";
+ config.raceGroupCentreCollectionId = "RaceGroupCentreFeedDigital";
 
  config.mongodbVelon_poolSize = 5;
  
