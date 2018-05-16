@@ -77,7 +77,13 @@ function processData(data, type) {
 }
 
 function handleStreamEnd(type) {
-	startStream(type);
+	var room  = rooms.find(type);
+	if (!room.sockets || room.sockets.length == 0) {
+		closeStream(type);
+	} else {
+		startStream(type);
+	}
+	
 }
 
 //Sends a message to a client connection - Optional: Can close connection after message sent
