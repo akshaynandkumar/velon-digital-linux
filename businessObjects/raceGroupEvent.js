@@ -29,10 +29,7 @@ RaceGroupEvent.prototype = {
 			delete data._id;
 			delete data.endProcessingTime;
 			data.groups.forEach(function(group) {
-				
-				//Attribute Formatting
-				data.avgSpeed = data.avgSpeed != null ? data.avgSpeed.toFixed(1) : null;
-				data.avgPower = data.avgPower != null ? data.avgPower.toFixed(0) : null;
+				group.groupId = group.groupLabel;
 			});
 			
 			var eventStageId = data.eventId + "-" + data.stageId;
