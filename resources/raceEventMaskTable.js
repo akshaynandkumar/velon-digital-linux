@@ -107,6 +107,11 @@ var raceEventMask = [{
 	   "HR": 0,
 	   "power": 0,
 	   "feed": 0
-}];
+	 },
+	 {
+		"HR": -1,
+		"power": -1,
+		"feed": -1
+	 }];
 
 module.exports = raceEventMask;
