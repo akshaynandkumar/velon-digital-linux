@@ -21,17 +21,18 @@ logger.infoLog('Node Version:' + process.version);
  */
 inits.start(function(callback) {
 	
-	// Get port from environment and store in Express.
-	//var port = normalizePort(process.env.PORT || '3000');
+	 //Get port from environment and store in Express.
+	var port = normalizePort(process.env.PORT || '3000');
 	
 	//Create websocket on the HTTP Server
-	//const WebSocket = require('ws');
+	const WebSocket = require('ws');
 
-	//const wss = new WebSocket.Server({port: port});
+	const wss = new WebSocket.Server({port: port});
 
 	//socketManager.init(wss);
 	//wss.on('listening', onListening);
 	logger.infoLog('Yadhunath:' + process.version);
+	
 
 	/**
 	 * Normalize a port into a number, string, or false.
