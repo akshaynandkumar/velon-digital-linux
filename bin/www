@@ -1,2 +1,64 @@
-const server = require('inits');
-server(ctx => 'Hello world!');
+// Module dependencies.
+var inits = require('inits');
+var debug = require('debug')('streaming_webapp:server');
+var http = require('http');
+var config = require('../config');
+var logger = require('../resources/loggingManager');
+require('../resources/resourceManager');
+var socketManager = require('../resources/socketManager');
+
+process.on('uncaughtException', function (err) {
+	var error = {};
+	error.header = "Uncaught Exception";
+	error.body = err;
+	logger.errorLog(error);
+});
+
+logger.infoLog('Node Version:' + process.version);
+
+/**
+ * Start Routine: Called once initialisation has completed
+ */
+inits.start(function(callback) {
+	
+	// Get port from environment and store in Express.
+	var port = normalizePort(process.env.PORT || '3000');
+	
+	//Create websocket on the HTTP Server
+	const WebSocket = require('ws');
+
+	const wss = new WebSocket.Server({port: port});
+
+	socketManager.init(wss);
+	wss.on('listening', onListening);
+
+	/**
+	 * Normalize a port into a number, string, or false.
+	 * @param val
+	 */
+	function normalizePort(val) {
+	  var port = parseInt(val, 10);
+
+	  if (isNaN(port)) {
+	    // named pipe
+	    return val;
+	  }
+
+	  if (port >= 0) {
+	    // port number
+	    return port;
+	  }
+
+	  return false;
+	}
+
+	/**
+	 * Event listener for Websocket "listening" event.
+	 */
+	function onListening() {
+	  logger.infoLog("velon-digital websocket listening on port " + port);
+	  callback(null);
+	}
+});
+
+
