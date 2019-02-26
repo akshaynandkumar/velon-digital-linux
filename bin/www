@@ -58,6 +58,7 @@ inits.start(function(callback) {
 	function onListening() {
 	  logger.infoLog("velon-digital websocket listening on port " + port);
 	  callback(null);
+	  ws.close();
 	}
 });
 
